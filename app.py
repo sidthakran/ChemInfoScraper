@@ -181,13 +181,25 @@ if run:
                 st.info("If you paste a sample ChemicalBook page URL that has suppliers, I can tune the selectors.")
                 st.stop()
 
-            df = pd.DataFrame(rows)
-            st.dataframe(df, use_container_width=True)
+           import csv
+           import io
 
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button("Download CSV", csv, file_name=f"{chemical_name}_suppliers.csv", mime="text/csv")
+           st.dataframe(rows, use_container_width=True)
 
-        except requests.HTTPError as e:
-            st.error(f"HTTP error while scraping: {e}")
-        except Exception as e:
-            st.error(f"Error: {e}")
+           buf = io.StringIO()
+           writer = csv.DictWriter(buf, fieldnames=["supplier_name", "email", "phone", "rate"])
+           writer.writeheader()
+           writer.writerows(rows)
+           csv_bytes = buf.getvalue().encode("utf-8")
+            
+           st.download_button(
+              "Download CSV",
+               csv_bytes,
+               file_name=f"{chemical_name}_suppliers.csv",
+               mime="text/csv",
+            )
+
+           except requests.HTTPError as e:
+               st.error(f"HTTP error while scraping: {e}")
+           except Exception as e:
+               st.error(f"Error: {e}")
